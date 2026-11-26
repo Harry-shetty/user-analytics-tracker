@@ -16,7 +16,7 @@
     return false;
   }
 
-  // When embedded inside the dashboard heatmap iframe: don't track, just report exact content height.
+  // When embedded inside the dashboard heatmap iframe: don't track, just report exact content height & support screenshot export.
   if (window.top !== window.self) {
     var reportHeight = function () {
       var h = document.body ? Math.ceil(document.body.getBoundingClientRect().height) : document.documentElement.scrollHeight;
@@ -27,6 +27,37 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(reportHeight);
     setTimeout(reportHeight, 150);
     setTimeout(reportHeight, 600);
+
+    var loadHtml2Canvas = function (cb) {
+      if (window.html2canvas) return cb(window.html2canvas);
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+      s.onload = function () { cb(window.html2canvas); };
+      s.onerror = function () { cb(null); };
+      document.head.appendChild(s);
+    };
+
+    window.addEventListener('message', function (e) {
+      if (!e.data || e.data.type !== 'ua_capture') return;
+      loadHtml2Canvas(function (h2c) {
+        if (!h2c) {
+          window.parent.postMessage({ type: 'ua_capture_result', dataUrl: null }, '*');
+          return;
+        }
+        h2c(document.body, {
+          useCORS: true,
+          scale: 1,
+          windowWidth: document.documentElement.clientWidth,
+          windowHeight: Math.ceil(document.body.getBoundingClientRect().height),
+        })
+          .then(function (canvas) {
+            window.parent.postMessage({ type: 'ua_capture_result', dataUrl: canvas.toDataURL('image/png') }, '*');
+          })
+          .catch(function () {
+            window.parent.postMessage({ type: 'ua_capture_result', dataUrl: null }, '*');
+          });
+      });
+    });
     return;
   }
 

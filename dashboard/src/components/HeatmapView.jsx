@@ -26,7 +26,27 @@ function loadImage(src) {
   });
 }
 
-async function downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includePage }) {
+function captureIframeScreenshot(iframeEl) {
+  return new Promise((resolve) => {
+    if (!iframeEl || !iframeEl.contentWindow) return resolve(null);
+    let done = false;
+    const finish = (val) => {
+      if (done) return;
+      done = true;
+      window.removeEventListener('message', onMsg);
+      clearTimeout(timer);
+      resolve(val);
+    };
+    const onMsg = (e) => {
+      if (e.data && e.data.type === 'ua_capture_result') finish(e.data.dataUrl || null);
+    };
+    const timer = setTimeout(() => finish(null), 8000);
+    window.addEventListener('message', onMsg);
+    iframeEl.contentWindow.postMessage({ type: 'ua_capture' }, '*');
+  });
+}
+
+async function downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includePage, iframeEl }) {
   const W = pageWidth;
   const headerH = 60;
   const H = pageHeight + headerH;
@@ -35,12 +55,18 @@ async function downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includeP
   canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // Capture the real page screenshot from the backend when live overlay is enabled
+  // 1) Try capturing directly from the live embedded iframe (works on Vercel + Render without Chrome)
+  // 2) Fall back to backend headless Chrome screenshot if available
   let pageImg = null;
   if (includePage && url) {
     try {
-      const shotUrl = `${BASE}/heatmap/screenshot?url=${encodeURIComponent(url)}&width=${pageWidth}&height=${pageHeight}`;
-      pageImg = await loadImage(shotUrl);
+      const dataUrl = await captureIframeScreenshot(iframeEl);
+      if (dataUrl) {
+        pageImg = await loadImage(dataUrl);
+      } else {
+        const shotUrl = `${BASE}/heatmap/screenshot?url=${encodeURIComponent(url)}&width=${pageWidth}&height=${pageHeight}`;
+        pageImg = await loadImage(shotUrl);
+      }
     } catch {
       pageImg = null;
     }
@@ -116,6 +142,7 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
   const [canvasWidth, setCanvasWidth] = useState(960);
   const [measuredHeight, setMeasuredHeight] = useState(null);
   const scrollerRef = useRef(null);
+  const iframeRef = useRef(null);
 
   useEffect(() => {
     if (initialUrl) setUrl(initialUrl);
@@ -207,7 +234,7 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
     if (!points.length || exporting) return;
     setExporting(true);
     try {
-      await downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includePage: showPage });
+      await downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includePage: showPage, iframeEl: iframeRef.current });
     } finally {
       setExporting(false);
     }
@@ -267,6 +294,7 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
         >
           {showPage && url && (
             <iframe
+              ref={iframeRef}
               key={url}
               title="Page preview"
               src={url}
