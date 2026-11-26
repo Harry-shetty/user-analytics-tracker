@@ -4,12 +4,15 @@ import { ArrowRightIcon } from './Icons.jsx';
 
 const COLORS = { page_view: '#9a3412', click: '#d97706' };
 
-function StatCard({ label, value, detail }) {
+function MetricCell({ label, value, detail, tone }) {
   return (
-    <div className="stat-card">
-      <div className="stat-label">{label}</div>
-      <div className="stat-value tabular">{value.toLocaleString()}</div>
-      {detail && <div className="stat-detail tabular">{detail}</div>}
+    <div className="metric-cell">
+      <div className="metric-head">
+        {tone && <span className="metric-dot" style={{ background: tone }} aria-hidden="true" />}
+        <span className="stat-label">{label}</span>
+      </div>
+      <div className="metric-value tabular">{value.toLocaleString()}</div>
+      <div className="stat-detail tabular">{detail}</div>
     </div>
   );
 }
@@ -206,15 +209,34 @@ export default function OverviewView({ refreshKey, onInspectHeatmap }) {
   const totalEvents = stats.page_views + stats.clicks;
   const avgPerSession = stats.total_sessions ? (totalEvents / stats.total_sessions).toFixed(1) : '0.0';
   const clicksPerView = stats.page_views ? (stats.clicks / stats.page_views).toFixed(1) : '0.0';
+  const viewShare = totalEvents ? Math.round((stats.page_views / totalEvents) * 100) : 50;
 
   return (
     <div className="overview">
-      <div className="stat-grid">
-        <StatCard label="Sessions" value={stats.total_sessions} detail={`${avgPerSession} events / session`} />
-        <StatCard label="Total events" value={totalEvents} detail="All tracked interactions" />
-        <StatCard label="Page views" value={stats.page_views} detail={`${stats.top_pages.length} tracked URLs`} />
-        <StatCard label="Clicks" value={stats.clicks} detail={`${clicksPerView} clicks / view`} />
-      </div>
+      <section className="metrics-bento" aria-label="Key metrics">
+        <div className="metric-hero">
+          <div className="metric-hero-top">
+            <span className="metric-hero-label">Total events</span>
+            <span className="metric-hero-tag tabular">{avgPerSession} / session</span>
+          </div>
+          <div className="metric-hero-value tabular">{totalEvents.toLocaleString()}</div>
+          <div className="metric-hero-foot">
+            <div className="ratio-track" aria-hidden="true">
+              <div className="ratio-views" style={{ width: `${viewShare}%` }} />
+            </div>
+            <div className="ratio-labels tabular">
+              <span>{viewShare}% page views</span>
+              <span>{100 - viewShare}% clicks</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="metric-strip">
+          <MetricCell label="Sessions" value={stats.total_sessions} detail={`${avgPerSession} events / session`} tone="#1c1917" />
+          <MetricCell label="Page views" value={stats.page_views} detail={`${stats.top_pages.length} tracked URLs`} tone={COLORS.page_view} />
+          <MetricCell label="Clicks" value={stats.clicks} detail={`${clicksPerView} clicks / view`} tone={COLORS.click} />
+        </div>
+      </section>
 
       <div className="chart-grid">
         <section className="panel">
