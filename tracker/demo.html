@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lumen — Architectural Home Goods</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="demo.css" />
+</head>
+<body>
+  <header>
+    <div class="wrap header-inner">
+      <a class="logo" href="demo.html">Lumen</a>
+      <nav aria-label="Store navigation">
+        <a href="demo.html" data-page="home">Shop</a>
+        <a href="demo.html?page=sale" data-page="sale">Sale</a>
+        <a href="demo.html?page=about" data-page="about">About</a>
+        <a href="demo.html?page=contact" data-page="contact">Contact</a>
+      </nav>
+      <button type="button" class="cart-trigger" id="cart-btn" aria-label="Open cart">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+          <path d="M3 6h18" />
+          <path d="M16 10a4 4 0 0 1-8 0" />
+        </svg>
+        <span>Bag</span>
+        <span class="cart-badge tabular" id="cart-count">0</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="app"></main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>Lumen Studio · Demo storefront tracked by CausalFunnel</span>
+      <div class="footer-links">
+        <a href="demo.html?page=about">About</a>
+        <a href="demo.html?page=returns">Returns</a>
+        <a href="demo.html?page=contact">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Slide-over shopping bag -->
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="drawer" id="cart-drawer" aria-label="Shopping bag" aria-hidden="true">
+    <div class="drawer-head">
+      <h2>Your bag</h2>
+      <button type="button" class="close-btn" id="close-drawer" aria-label="Close bag">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="drawer-body" id="cart-items"></div>
+    <div class="drawer-foot">
+      <div class="subtotal-row">
+        <span>Subtotal</span>
+        <span class="tabular" id="cart-subtotal">₹0</span>
+      </div>
+      <div class="shipping-note" id="shipping-note">Free shipping on orders over ₹4,000.</div>
+      <button type="button" class="btn" id="checkout-btn">Place demo order</button>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="demo.js?v=2"></script>
+  <script src="tracker.js?v=3" data-endpoint="http://localhost:5001/api/events"></script>
+</body>
+</html>
