@@ -47,7 +47,7 @@ async function downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includeP
   }
 
   // Header bar
-  ctx.fillStyle = '#121518';
+  ctx.fillStyle = '#1c1917';
   ctx.fillRect(0, 0, W, headerH);
   ctx.fillStyle = '#f8fafc';
   ctx.font = '600 17px system-ui, -apple-system, sans-serif';

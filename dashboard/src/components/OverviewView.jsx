@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { fetchStats } from '../api.js';
 import { ArrowRightIcon } from './Icons.jsx';
 
-const COLORS = { page_view: '#0f766e', click: '#d97706' };
+const COLORS = { page_view: '#9a3412', click: '#d97706' };
 
 function StatCard({ label, value, detail }) {
   return (
@@ -124,7 +124,7 @@ function BarChart({ data }) {
                 width={barW}
                 height={h}
                 rx="4"
-                fill={isHover ? '#115e59' : '#0f766e'}
+                fill={isHover ? '#7c2d12' : '#9a3412'}
                 opacity={d.count ? 1 : 0.16}
                 className="bar-rect"
               />
