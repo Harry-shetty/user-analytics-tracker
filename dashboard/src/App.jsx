@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import OverviewView from './components/OverviewView.jsx';
 import SessionsView from './components/SessionsView.jsx';
 import HeatmapView from './components/HeatmapView.jsx';
-import { OverviewIcon, SessionsIcon, HeatmapIcon, RefreshIcon } from './components/Icons.jsx';
+import { RefreshIcon } from './components/Icons.jsx';
 import { BASE } from './api.js';
 
 const TABS = [
-  { id: 'overview', label: 'Overview', icon: OverviewIcon, title: 'Analytics overview', subtitle: 'Traffic volume, event mix, and top pages.' },
-  { id: 'sessions', label: 'Sessions', icon: SessionsIcon, title: 'User sessions', subtitle: 'Inspect chronological journeys for every visitor.' },
-  { id: 'heatmap', label: 'Heatmap', icon: HeatmapIcon, title: 'Click heatmap', subtitle: 'Normalized click density overlaid on tracked pages.' },
+  { id: 'overview', label: 'Overview', title: 'Analytics overview', subtitle: 'Traffic volume, event mix, and top pages.' },
+  { id: 'sessions', label: 'Sessions', title: 'User sessions', subtitle: 'Inspect chronological journeys for every visitor.' },
+  { id: 'heatmap', label: 'Heatmap', title: 'Click heatmap', subtitle: 'Normalized click density overlaid on tracked pages.' },
 ];
 
 export default function App() {
@@ -51,61 +51,50 @@ export default function App() {
   }
 
   return (
-    <div className="shell">
-      <aside className="sidebar" aria-label="Primary navigation">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            <span className="brand-bar" />
-            <span className="brand-bar short" />
-          </span>
-          <span className="brand-name">CausalFunnel</span>
-        </div>
+    <div className="app">
+      <header className="site-header">
+        <div className="wrap header-inner">
+          <button type="button" className="logo" onClick={() => setView('overview')}>
+            CausalFunnel
+          </button>
 
-        <nav className="nav-list">
-          {TABS.map((t) => {
-            const Icon = t.icon;
-            return (
+          <nav className="top-nav" aria-label="Primary navigation">
+            {TABS.map((t) => (
               <button
                 key={t.id}
                 type="button"
-                className={view === t.id ? 'nav-item active' : 'nav-item'}
+                className={view === t.id ? 'nav-link active' : 'nav-link'}
                 onClick={() => setView(t.id)}
                 aria-current={view === t.id ? 'page' : undefined}
               >
-                <Icon />
-                <span>{t.label}</span>
+                {t.label}
               </button>
-            );
-          })}
-        </nav>
+            ))}
+          </nav>
 
-        <div className="sidebar-footer">
-          <div className="status-pill">
-            <span className={live ? 'status-dot live' : 'status-dot'} aria-hidden="true" />
-            <span>{live ? 'Atlas Live' : 'Reconnecting…'}</span>
+          <div className="header-actions">
+            <span className="status-pill" title="Real-time SSE connection to MongoDB Atlas">
+              <span className={live ? 'status-dot live' : 'status-dot'} aria-hidden="true" />
+              <span>{live ? 'Atlas Live' : 'Reconnecting'}</span>
+            </span>
+            <button type="button" className="btn-refresh" onClick={handleRefresh}>
+              <RefreshIcon className={spinning ? 'spin' : ''} width={15} height={15} />
+              <span>Refresh</span>
+            </button>
           </div>
-          <div className="sidebar-meta mono">SSE</div>
         </div>
-      </aside>
+      </header>
 
-      <div className="workspace">
-        <header className="topbar">
-          <div>
-            <h1 className="page-title">{activeTab.title}</h1>
-            <p className="page-subtitle">{activeTab.subtitle}</p>
-          </div>
-          <button type="button" className="btn-refresh" onClick={handleRefresh}>
-            <RefreshIcon className={spinning ? 'spin' : ''} />
-            <span>Refresh</span>
-          </button>
-        </header>
+      <main className="wrap content">
+        <div className="page-head">
+          <h1 className="page-title">{activeTab.title}</h1>
+          <p className="page-subtitle">{activeTab.subtitle}</p>
+        </div>
 
-        <main className="content">
-          {view === 'overview' && <OverviewView refreshKey={refreshKey} onInspectHeatmap={openPageHeatmap} />}
-          {view === 'sessions' && <SessionsView refreshKey={refreshKey} />}
-          {view === 'heatmap' && <HeatmapView refreshKey={refreshKey} initialUrl={heatmapTargetUrl} />}
-        </main>
-      </div>
+        {view === 'overview' && <OverviewView refreshKey={refreshKey} onInspectHeatmap={openPageHeatmap} />}
+        {view === 'sessions' && <SessionsView refreshKey={refreshKey} />}
+        {view === 'heatmap' && <HeatmapView refreshKey={refreshKey} initialUrl={heatmapTargetUrl} />}
+      </main>
     </div>
   );
 }
