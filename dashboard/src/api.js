@@ -1,4 +1,5 @@
-export const BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').replace(/\/$/, '');
+const raw = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api').trim().replace(/\/+$/, '');
+export const BASE = raw.endsWith('/api') ? raw : `${raw}/api`;
 
 async function get(path) {
   const res = await fetch(`${BASE}${path}`);

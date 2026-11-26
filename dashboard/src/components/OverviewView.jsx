@@ -132,7 +132,7 @@ export default function OverviewView({ refreshKey, onInspectHeatmap }) {
   if (error) {
     return (
       <div className="error-banner" role="alert">
-        Could not load overview metrics ({error}). Make sure the backend API is running on port 5001.
+        Could not load overview metrics ({error}). Check that the backend API is reachable.
       </div>
     );
   }
