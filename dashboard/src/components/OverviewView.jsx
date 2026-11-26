@@ -20,12 +20,12 @@ function MetricCell({ label, value, detail, tone }) {
 function BarChart({ data }) {
   const [hovered, setHovered] = useState(null);
   const max = Math.max(1, ...data.map((d) => d.count));
-  const H = 156;
-  const W = 460;
-  const padLeft = 28;
+  const H = 180;
+  const W = 760;
+  const padLeft = 32;
   const chartW = W - padLeft;
   const slot = chartW / data.length;
-  const barW = Math.min(36, slot * 0.52);
+  const barW = Math.min(48, slot * 0.42);
 
   return (
     <div className="bar-wrap">
@@ -170,17 +170,15 @@ export default function OverviewView({ refreshKey, onInspectHeatmap }) {
         </div>
       </section>
 
-      <div className="chart-grid">
-        <section className="panel">
-          <h2 className="panel-title">Activity, last 7 days</h2>
-          <BarChart data={stats.events_per_day} />
-        </section>
+      <section className="panel">
+        <h2 className="panel-title">Activity, last 7 days</h2>
+        <BarChart data={stats.events_per_day} />
+      </section>
 
-        <section className="panel">
-          <h2 className="panel-title">Top pages</h2>
-          <TopPages pages={stats.top_pages} onInspectHeatmap={onInspectHeatmap} />
-        </section>
-      </div>
+      <section className="panel">
+        <h2 className="panel-title">Top pages</h2>
+        <TopPages pages={stats.top_pages} onInspectHeatmap={onInspectHeatmap} />
+      </section>
     </div>
   );
 }
