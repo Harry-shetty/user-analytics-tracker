@@ -17,83 +17,15 @@ function MetricCell({ label, value, detail, tone }) {
   );
 }
 
-function DonutChart({ pageViews, clicks }) {
-  const total = pageViews + clicks;
-  const R = 52;
-  const C = 2 * Math.PI * R;
-  const viewLen = total ? (pageViews / total) * C : 0;
-  const clickLen = total ? (clicks / total) * C : 0;
-  const viewPct = total ? Math.round((pageViews / total) * 100) : 0;
-  const clickPct = total ? 100 - viewPct : 0;
-
-  return (
-    <div className="donut-wrap">
-      <svg viewBox="0 0 144 144" className="donut" role="img" aria-label={`Page views ${viewPct}%, clicks ${clickPct}%`}>
-        <circle cx="72" cy="72" r={R} fill="none" stroke="#eceee9" strokeWidth="14" />
-        {total > 0 && (
-          <>
-            <circle
-              cx="72"
-              cy="72"
-              r={R}
-              fill="none"
-              stroke={COLORS.page_view}
-              strokeWidth="14"
-              strokeDasharray={`${viewLen} ${C - viewLen}`}
-              transform="rotate(-90 72 72)"
-            />
-            <circle
-              cx="72"
-              cy="72"
-              r={R}
-              fill="none"
-              stroke={COLORS.click}
-              strokeWidth="14"
-              strokeDasharray={`${clickLen} ${C - clickLen}`}
-              strokeDashoffset={-viewLen}
-              transform="rotate(-90 72 72)"
-            />
-          </>
-        )}
-        <text x="72" y="69" textAnchor="middle" className="donut-total tabular">{total.toLocaleString()}</text>
-        <text x="72" y="86" textAnchor="middle" className="donut-sub">total events</text>
-      </svg>
-
-      <ul className="legend">
-        <li>
-          <span className="legend-left">
-            <span className="swatch" style={{ background: COLORS.page_view }} />
-            <span>Page views</span>
-          </span>
-          <span className="legend-right tabular">
-            <strong>{pageViews.toLocaleString()}</strong>
-            <span className="muted">{viewPct}%</span>
-          </span>
-        </li>
-        <li>
-          <span className="legend-left">
-            <span className="swatch" style={{ background: COLORS.click }} />
-            <span>Clicks</span>
-          </span>
-          <span className="legend-right tabular">
-            <strong>{clicks.toLocaleString()}</strong>
-            <span className="muted">{clickPct}%</span>
-          </span>
-        </li>
-      </ul>
-    </div>
-  );
-}
-
 function BarChart({ data }) {
   const [hovered, setHovered] = useState(null);
   const max = Math.max(1, ...data.map((d) => d.count));
-  const H = 148;
-  const W = 440;
+  const H = 156;
+  const W = 460;
   const padLeft = 28;
   const chartW = W - padLeft;
   const slot = chartW / data.length;
-  const barW = Math.min(34, slot * 0.52);
+  const barW = Math.min(36, slot * 0.52);
 
   return (
     <div className="bar-wrap">
@@ -103,7 +35,7 @@ function BarChart({ data }) {
           const label = Math.round(max * f);
           return (
             <g key={f}>
-              <line x1={padLeft} x2={W} y1={y} y2={y} stroke="#eceee9" />
+              <line x1={padLeft} x2={W} y1={y} y2={y} stroke="#ece6dc" />
               <text x={padLeft - 6} y={y + 4} textAnchor="end" className="axis tabular">{label}</text>
             </g>
           );
@@ -217,7 +149,7 @@ export default function OverviewView({ refreshKey, onInspectHeatmap }) {
         <div className="metric-hero">
           <div className="metric-hero-top">
             <span className="metric-hero-label">Total events</span>
-            <span className="metric-hero-tag tabular">{avgPerSession} / session</span>
+            <span className="metric-hero-tag">Event mix</span>
           </div>
           <div className="metric-hero-value tabular">{totalEvents.toLocaleString()}</div>
           <div className="metric-hero-foot">
@@ -240,19 +172,15 @@ export default function OverviewView({ refreshKey, onInspectHeatmap }) {
 
       <div className="chart-grid">
         <section className="panel">
-          <h2 className="panel-title">Event mix</h2>
-          <DonutChart pageViews={stats.page_views} clicks={stats.clicks} />
-        </section>
-        <section className="panel">
           <h2 className="panel-title">Activity, last 7 days</h2>
           <BarChart data={stats.events_per_day} />
         </section>
-      </div>
 
-      <section className="panel">
-        <h2 className="panel-title">Top pages</h2>
-        <TopPages pages={stats.top_pages} onInspectHeatmap={onInspectHeatmap} />
-      </section>
+        <section className="panel">
+          <h2 className="panel-title">Top pages</h2>
+          <TopPages pages={stats.top_pages} onInspectHeatmap={onInspectHeatmap} />
+        </section>
+      </div>
     </div>
   );
 }

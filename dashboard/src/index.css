@@ -224,7 +224,7 @@ button, select, input { font: inherit; color: inherit; }
 .metric-value { font-family: 'Instrument Serif', Georgia, serif; font-size: 46px; font-weight: 400; line-height: 1; letter-spacing: -0.02em; color: var(--text); }
 .stat-detail { font-size: 12px; color: var(--muted); }
 
-.chart-grid { display: grid; grid-template-columns: 1fr 1.45fr; gap: 20px; }
+.chart-grid { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; align-items: start; }
 .donut-wrap { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; padding: 4px 0; }
 .donut { width: 156px; height: 156px; flex-shrink: 0; }
 .donut-total { font-size: 24px; font-weight: 700; fill: var(--text); }
