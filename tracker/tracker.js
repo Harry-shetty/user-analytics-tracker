@@ -34,10 +34,16 @@
   if (navigator.webdriver) return;
 
   var script = document.currentScript;
+  var isLocalSeparate =
+    window.location.protocol === 'file:' ||
+    (window.location.hostname === 'localhost' && window.location.port && window.location.port !== '5001');
+  var defaultEndpoint = isLocalSeparate
+    ? 'http://localhost:5001/api/events'
+    : window.location.origin + '/api/events';
   var ENDPOINT =
     window.ANALYTICS_ENDPOINT ||
     (script && script.getAttribute('data-endpoint')) ||
-    'http://localhost:5001/api/events';
+    defaultEndpoint;
   var STORAGE_KEY = 'ua_session_id';
 
   function uuid() {

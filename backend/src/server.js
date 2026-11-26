@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -14,6 +15,11 @@ app.use(express.json({ limit: '100kb', type: ['application/json', 'text/plain'] 
 
 app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 app.use('/api', api);
+
+// Serve the demo storefront and tracker script statically at /demo
+const trackerDir = path.join(__dirname, '../../tracker');
+app.get('/demo', (_req, res) => res.redirect('/demo/demo.html'));
+app.use('/demo', express.static(trackerDir));
 
 app.use((_req, res) => res.status(404).json({ error: 'Not found' }));
 
