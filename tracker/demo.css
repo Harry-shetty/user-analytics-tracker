@@ -39,10 +39,11 @@ header {
 
 .header-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; gap: 24px; }
 .logo { font-family: 'Instrument Serif', Georgia, serif; font-size: 28px; letter-spacing: -0.01em; line-height: 1; }
+.header-right { display: flex; align-items: center; gap: 10px; }
 
-nav { display: flex; align-items: center; gap: 32px; font-size: 14px; font-weight: 500; color: var(--muted); }
-nav a { position: relative; padding: 6px 0; transition: color 150ms ease; }
-nav a::after {
+.desktop-nav { display: flex; align-items: center; gap: 32px; font-size: 14px; font-weight: 500; color: var(--muted); }
+.desktop-nav a { position: relative; padding: 6px 0; transition: color 150ms ease; }
+.desktop-nav a::after {
   content: '';
   position: absolute;
   left: 0; right: 0; bottom: 0;
@@ -52,8 +53,83 @@ nav a::after {
   transform-origin: left;
   transition: transform 200ms var(--ease-out);
 }
-nav a:hover, nav a.active { color: var(--ink); }
-nav a.active::after { transform: scaleX(1); }
+.desktop-nav a:hover, .desktop-nav a.active { color: var(--ink); }
+.desktop-nav a.active::after { transform: scaleX(1); }
+
+/* Mobile hamburger & animated slide-down menu */
+.hamburger {
+  display: none;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  cursor: pointer;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: border-color 150ms ease, transform 140ms var(--ease-out);
+}
+.hamburger:active { transform: scale(0.95); }
+.ham-line {
+  display: block;
+  width: 17px;
+  height: 1.75px;
+  border-radius: 2px;
+  background: var(--ink);
+  transform-origin: center;
+  transition: transform 220ms var(--ease-out), opacity 160ms ease;
+}
+.hamburger.open .ham-line:nth-child(1) { transform: translateY(6.75px) rotate(45deg); }
+.hamburger.open .ham-line:nth-child(2) { opacity: 0; transform: scaleX(0.4); }
+.hamburger.open .ham-line:nth-child(3) { transform: translateY(-6.75px) rotate(-45deg); }
+
+.mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 25, 23, 0.36);
+  z-index: 25;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease-out);
+}
+.mobile-backdrop.open { opacity: 1; pointer-events: auto; }
+
+.mobile-menu {
+  position: fixed;
+  top: 66px;
+  left: 16px;
+  right: 16px;
+  z-index: 30;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 18px 40px rgba(28, 25, 23, 0.16);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  transform: translateY(-10px) scale(0.97);
+  transform-origin: top right;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease-out), transform 240ms var(--ease-out);
+}
+.mobile-menu.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+.mobile-menu a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 46px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--muted);
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.mobile-menu a.active { background: #faece4; color: var(--accent-hover); font-weight: 600; }
 
 /* ── Buttons ───────────────────────────────────────────────────── */
 .btn {
@@ -268,21 +344,12 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; font-size: 13px; 
   .grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .wrap { padding: 0 16px; }
-  .header-inner { height: auto; flex-wrap: wrap; padding: 12px 0 8px; gap: 10px 16px; }
-  .logo { order: 1; font-size: 26px; }
-  .cart-trigger { order: 2; }
-  nav {
-    order: 3;
-    width: 100%;
-    justify-content: space-between;
-    gap: 12px;
-    padding-top: 8px;
-    border-top: 1px solid var(--border);
-    font-size: 13px;
-  }
-  nav a { padding: 8px 2px; }
+  .header-inner { height: 60px; gap: 12px; }
+  .logo { font-size: 26px; }
+  .desktop-nav { display: none; }
+  .hamburger { display: inline-flex; }
   .hero { padding: 32px 0 40px; text-align: center; }
   .hero p { font-size: 15px; margin: 0 auto 24px; }
   .hero-actions { justify-content: center; }
@@ -306,4 +373,5 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; font-size: 13px; 
   .grid { grid-template-columns: 1fr; }
   .hero-actions { flex-direction: column; align-items: stretch; }
   .hero-actions .btn, .band .btn { width: 100%; }
+  .bag-label { display: none; }
 }

@@ -124,3 +124,21 @@ export function TrashIcon(props) {
     </svg>
   );
 }
+
+export function LaptopIcon(props) {
+  return (
+    <svg {...baseProps} {...props}>
+      <rect x="3" y="4" width="18" height="12" rx="2" />
+      <path d="M2 20h20" />
+    </svg>
+  );
+}
+
+export function PhoneIcon(props) {
+  return (
+    <svg {...baseProps} {...props}>
+      <rect x="6" y="2" width="12" height="20" rx="2.5" />
+      <path d="M12 18h.01" />
+    </svg>
+  );
+}

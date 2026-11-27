@@ -115,18 +115,27 @@
     }
   }
 
+  function getDeviceType() {
+    var w = document.documentElement.clientWidth || window.innerWidth;
+    return w <= 768 ? 'mobile' : 'desktop';
+  }
+
   function track(type, extra) {
     var payload = {
       session_id: sessionId,
       event_type: type,
       page_url: window.location.href,
+      device_type: getDeviceType(),
       timestamp: new Date().toISOString(),
     };
     for (var k in extra) payload[k] = extra[k];
     send(payload);
   }
 
-  track('page_view', {});
+  track('page_view', {
+    viewport_width: document.documentElement.clientWidth || window.innerWidth,
+    viewport_height: getDocHeight(),
+  });
 
   document.addEventListener(
     'click',

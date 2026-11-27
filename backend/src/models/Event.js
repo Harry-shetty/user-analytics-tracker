@@ -10,6 +10,7 @@ const eventSchema = new mongoose.Schema(
     y: { type: Number, default: null },
     viewport_width: { type: Number, default: null },
     viewport_height: { type: Number, default: null },
+    device_type: { type: String, enum: ['mobile', 'desktop'], default: 'desktop', index: true },
   },
   { versionKey: false }
 );

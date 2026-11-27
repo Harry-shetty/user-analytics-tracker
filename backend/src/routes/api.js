@@ -41,6 +41,7 @@ router.get('/events/stream', (req, res) => {
     clearInterval(keepAlive);
     streamClients.delete(res);
   });
+  
 });
 
 router.post(
@@ -70,6 +71,13 @@ router.post(
 
     if (errors.length) return res.status(400).json({ error: 'Validation failed', details: errors });
 
+    const inferredDevice =
+      b.device_type === 'mobile' || b.device_type === 'desktop'
+        ? b.device_type
+        : optNum(b.viewport_width) !== null && b.viewport_width <= 768
+          ? 'mobile'
+          : 'desktop';
+
     const doc = await Event.create({
       session_id: b.session_id.trim(),
       event_type: b.event_type,
@@ -79,6 +87,7 @@ router.post(
       y: optNum(b.y),
       viewport_width: optNum(b.viewport_width),
       viewport_height: optNum(b.viewport_height),
+      device_type: inferredDevice,
     });
     broadcastEvent(doc);
     res.status(201).json(doc);
@@ -93,9 +102,25 @@ router.get(
     const since = new Date(Date.now() - 6 * DAY);
     since.setUTCHours(0, 0, 0, 0);
 
-    const [types, sessionCount, topPages, daily] = await Promise.all([
+    const [types, sessionDevices, topPages, daily] = await Promise.all([
       Event.aggregate([{ $group: { _id: '$event_type', count: { $sum: 1 } } }]),
-      Event.aggregate([{ $group: { _id: '$session_id' } }, { $count: 'n' }]),
+      Event.aggregate([
+        {
+          $group: {
+            _id: '$session_id',
+            device: {
+              $last: {
+                $cond: [
+                  { $or: [{ $eq: ['$device_type', 'mobile'] }, { $and: [{ $ne: ['$viewport_width', null] }, { $lte: ['$viewport_width', 768] }] }] },
+                  'mobile',
+                  'desktop',
+                ],
+              },
+            },
+          },
+        },
+        { $group: { _id: '$device', count: { $sum: 1 } } },
+      ]),
       Event.aggregate([
         { $group: { _id: '$page_url', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
@@ -108,6 +133,9 @@ router.get(
     ]);
 
     const countOf = (type) => (types.find((t) => t._id === type) || { count: 0 }).count;
+    const devCount = (d) => (sessionDevices.find((x) => x._id === d) || { count: 0 }).count;
+    const mobileSessions = devCount('mobile');
+    const desktopSessions = devCount('desktop');
     const byDay = Object.fromEntries(daily.map((d) => [d._id, d.count]));
     const last7Days = [];
     for (let i = 6; i >= 0; i--) {
@@ -116,7 +144,9 @@ router.get(
     }
 
     res.json({
-      total_sessions: sessionCount.length ? sessionCount[0].n : 0,
+      total_sessions: mobileSessions + desktopSessions,
+      mobile_sessions: mobileSessions,
+      desktop_sessions: desktopSessions,
       page_views: countOf('page_view'),
       clicks: countOf('click'),
       top_pages: topPages.map((p) => ({ page_url: p._id, count: p.count })),
@@ -129,16 +159,26 @@ router.get(
   '/sessions',
   wrap(async (_req, res) => {
     const sessions = await Event.aggregate([
+      { $sort: { timestamp: 1 } },
       {
         $group: {
           _id: '$session_id',
           event_count: { $sum: 1 },
           first_seen: { $min: '$timestamp' },
           last_seen: { $max: '$timestamp' },
+          device_type: {
+            $last: {
+              $cond: [
+                { $or: [{ $eq: ['$device_type', 'mobile'] }, { $and: [{ $ne: ['$viewport_width', null] }, { $lte: ['$viewport_width', 768] }] }] },
+                'mobile',
+                'desktop',
+              ],
+            },
+          },
         },
       },
       { $sort: { last_seen: -1 } },
-      { $project: { _id: 0, session_id: '$_id', event_count: 1, first_seen: 1, last_seen: 1 } },
+      { $project: { _id: 0, session_id: '$_id', event_count: 1, first_seen: 1, last_seen: 1, device_type: 1 } },
     ]);
     res.json(sessions);
   })
@@ -160,13 +200,29 @@ router.get(
   })
 );
 
+function deviceFilter(device) {
+  if (device === 'mobile') {
+    return { $or: [{ device_type: 'mobile' }, { viewport_width: { $lte: 768, $gt: 0 } }] };
+  }
+  if (device === 'desktop') {
+    return {
+      $and: [
+        { device_type: { $ne: 'mobile' } },
+        { $or: [{ viewport_width: { $gt: 768 } }, { viewport_width: null }] },
+      ],
+    };
+  }
+  return {};
+}
+
 router.get(
   '/heatmap',
   wrap(async (req, res) => {
-    const { url } = req.query;
+    const { url, device } = req.query;
     if (typeof url !== 'string' || !url) return res.status(400).json({ error: 'url query param is required' });
-    const clicks = await Event.find({ page_url: url, event_type: 'click' })
-      .select('x y viewport_width viewport_height timestamp -_id')
+    const filter = { page_url: url, event_type: 'click', ...deviceFilter(device) };
+    const clicks = await Event.find(filter)
+      .select('x y viewport_width viewport_height device_type timestamp -_id')
       .lean();
     res.json(clicks);
   })
@@ -175,9 +231,9 @@ router.get(
 router.delete(
   '/heatmap',
   wrap(async (req, res) => {
-    const { url } = req.query;
-    const filter = typeof url === 'string' && url ? { page_url: url, event_type: 'click' } : { event_type: 'click' };
-    const result = await Event.deleteMany(filter);
+    const { url, device } = req.query;
+    const base = typeof url === 'string' && url ? { page_url: url, event_type: 'click' } : { event_type: 'click' };
+    const result = await Event.deleteMany({ ...base, ...deviceFilter(device) });
     broadcastEvent({ type: 'cleared', page_url: url || null });
     res.json({ deleted: result.deletedCount });
   })

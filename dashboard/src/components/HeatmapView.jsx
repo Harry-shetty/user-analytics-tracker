@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { BASE, fetchPages, fetchHeatmap, clearHeatmap } from '../api.js';
-import { DownloadIcon, TrashIcon } from './Icons.jsx';
+import { DownloadIcon, TrashIcon, LaptopIcon, PhoneIcon } from './Icons.jsx';
 
-function commonWidth(points) {
+function commonWidth(points, fallback) {
   const counts = {};
   points.forEach((p) => (counts[p.viewport_width] = (counts[p.viewport_width] || 0) + 1));
-  let best = 1440;
+  let best = fallback;
   let bestCount = 0;
   Object.keys(counts).forEach((w) => {
     if (counts[w] > bestCount) {
@@ -46,7 +46,7 @@ function captureIframeScreenshot(iframeEl) {
   });
 }
 
-async function downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includePage, iframeEl }) {
+async function downloadHeatmapPNG({ url, device, points, pageWidth, pageHeight, includePage, iframeEl }) {
   const W = pageWidth;
   const headerH = 60;
   const H = pageHeight + headerH;
@@ -55,8 +55,6 @@ async function downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includeP
   canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // 1) Try capturing directly from the live embedded iframe (works on Vercel + Render without Chrome)
-  // 2) Fall back to backend headless Chrome screenshot if available
   let pageImg = null;
   if (includePage && url) {
     try {
@@ -72,17 +70,12 @@ async function downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includeP
     }
   }
 
-  // Header bar
   ctx.fillStyle = '#1c1917';
   ctx.fillRect(0, 0, W, headerH);
   ctx.fillStyle = '#f8fafc';
-  ctx.font = '600 17px system-ui, -apple-system, sans-serif';
-  ctx.fillText(`Click Heatmap — ${url || 'All pages'}`, 24, 36);
-  ctx.fillStyle = '#9ca3af';
-  ctx.font = '500 14px system-ui, -apple-system, sans-serif';
-  ctx.textAlign = 'right';
-  ctx.fillText(`${points.length} clicks · ${pageWidth}×${pageHeight}px`, W - 24, 36);
-  ctx.textAlign = 'left';
+  ctx.font = '600 15px system-ui, -apple-system, sans-serif';
+  const label = device === 'mobile' ? 'Mobile Heatmap' : 'Laptop Heatmap';
+  ctx.fillText(`${label} — ${points.length} clicks`, 16, 36);
 
   if (pageImg) {
     ctx.drawImage(pageImg, 0, headerH, W, pageHeight);
@@ -107,8 +100,7 @@ async function downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includeP
     ctx.globalCompositeOperation = 'screen';
   }
 
-  // Radial heat spots
-  const radius = Math.max(36, Math.round(W * 0.032));
+  const radius = Math.max(24, Math.round(W * 0.036));
   points.forEach((c) => {
     const px = (c.x / c.viewport_width) * W;
     const py = headerH + (c.y / c.viewport_height) * pageHeight;
@@ -124,7 +116,7 @@ async function downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includeP
 
   const link = document.createElement('a');
   const slug = (url || 'heatmap').replace(/^https?:\/\//, '').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
-  link.download = `heatmap-${slug || 'export'}.png`;
+  link.download = `heatmap-${device}-${slug || 'export'}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
 }
@@ -132,6 +124,7 @@ async function downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includeP
 export default function HeatmapView({ refreshKey, initialUrl }) {
   const [pages, setPages] = useState([]);
   const [url, setUrl] = useState(initialUrl || '');
+  const [device, setDevice] = useState('desktop');
   const [clicks, setClicks] = useState([]);
   const [hover, setHover] = useState(null);
   const [error, setError] = useState('');
@@ -150,7 +143,8 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
 
   useEffect(() => {
     setMeasuredHeight(null);
-  }, [url]);
+    setHover(null);
+  }, [url, device]);
 
   useEffect(() => {
     function onMessage(e) {
@@ -187,30 +181,35 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
       return;
     }
     let cancelled = false;
-    if (!clicks.length) setLoading(true);
-    fetchHeatmap(url)
+    setLoading(true);
+    fetchHeatmap(url, device)
       .then((c) => !cancelled && setClicks(c))
       .catch((e) => !cancelled && setError(e.message))
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
     };
-  }, [url, refreshKey]);
+  }, [url, device, refreshKey]);
 
+  const isMobile = device === 'mobile';
   const points = clicks.filter((c) => c.x != null && c.y != null && c.viewport_width > 0 && c.viewport_height > 0);
-  const pageWidth = commonWidth(points);
+  const pageWidth = isMobile ? commonWidth(points, 390) : commonWidth(points, 1440);
   const recordedHeight = points.reduce((m, p) => Math.max(m, p.viewport_height), 0);
-  const pageHeight = showPage ? measuredHeight || recordedHeight || 1500 : Math.round((pageWidth * 10) / 16);
+  const pageHeight = showPage
+    ? measuredHeight || recordedHeight || (isMobile ? 2200 : 1500)
+    : isMobile
+      ? Math.round((pageWidth * 16) / 9)
+      : Math.round((pageWidth * 10) / 16);
 
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return undefined;
-    const update = () => setCanvasWidth(el.clientWidth || 960);
+    const update = () => setCanvasWidth(el.clientWidth || (isMobile ? 390 : 960));
     update();
     const observer = new ResizeObserver(update);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [showPage, url]);
+  }, [showPage, url, isMobile]);
 
   const scale = canvasWidth / pageWidth;
   const scaledHeight = Math.round(pageHeight * scale);
@@ -220,7 +219,7 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
     setClearing(true);
     setError('');
     try {
-      await clearHeatmap(url);
+      await clearHeatmap(url, device);
       setClicks([]);
       setHover(null);
     } catch (e) {
@@ -234,7 +233,7 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
     if (!points.length || exporting) return;
     setExporting(true);
     try {
-      await downloadHeatmapPNG({ url, points, pageWidth, pageHeight, includePage: showPage, iframeEl: iframeRef.current });
+      await downloadHeatmapPNG({ url, device, points, pageWidth, pageHeight, includePage: showPage, iframeEl: iframeRef.current });
     } finally {
       setExporting(false);
     }
@@ -252,6 +251,25 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
             ))}
           </select>
         </label>
+
+        <div className="device-switch" role="group" aria-label="Select device heatmap">
+          <button
+            type="button"
+            className={device === 'desktop' ? 'device-btn active' : 'device-btn'}
+            onClick={() => setDevice('desktop')}
+          >
+            <LaptopIcon width={15} height={15} />
+            <span>Laptop</span>
+          </button>
+          <button
+            type="button"
+            className={device === 'mobile' ? 'device-btn active' : 'device-btn'}
+            onClick={() => setDevice('mobile')}
+          >
+            <PhoneIcon width={15} height={15} />
+            <span>Mobile</span>
+          </button>
+        </div>
 
         <div className="heatmap-controls">
           <label className="toggle-field">
@@ -277,7 +295,7 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
             className="btn-action danger"
             disabled={!clicks.length || clearing}
             onClick={handleClear}
-            title="Clear all click data for this page"
+            title={`Clear ${device} click data for this page`}
           >
             <TrashIcon width={15} height={15} />
             <span>{clearing ? 'Clearing…' : 'Clear data'}</span>
@@ -287,16 +305,19 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
 
       {error && <div className="error-banner" role="alert">{error}</div>}
 
-      <div ref={scrollerRef} className={showPage ? 'heat-scroller with-page' : 'heat-scroller'}>
+      <div
+        ref={scrollerRef}
+        className={`heat-scroller${showPage ? ' with-page' : ''}${isMobile ? ' mobile-frame' : ''}`}
+      >
         <div
-          className={showPage ? 'heat-stage with-page' : 'heat-stage'}
+          className={`heat-stage${showPage ? ' with-page' : ''}${isMobile ? ' mobile-stage' : ''}`}
           style={{ height: showPage ? scaledHeight : undefined }}
         >
           {showPage && url && (
             <iframe
               ref={iframeRef}
-              key={url}
-              title="Page preview"
+              key={`${url}-${device}`}
+              title={`${device} page preview`}
               src={url}
               className="page-frame"
               scrolling="no"
@@ -305,8 +326,12 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
             />
           )}
 
-          {loading && <div className="canvas-msg">Loading clicks…</div>}
-          {!loading && !points.length && <div className="canvas-msg">No click data recorded for this URL yet.</div>}
+          {loading && <div className="canvas-msg">Loading {device} clicks…</div>}
+          {!loading && !points.length && (
+            <div className="canvas-msg">
+              No {isMobile ? 'mobile' : 'laptop'} clicks recorded for this page yet.
+            </div>
+          )}
 
           {points.map((c, i) => {
             const left = Math.min(100, Math.max(0, (c.x / c.viewport_width) * 100));
@@ -328,7 +353,7 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
               style={{
                 left: `${hover.left}%`,
                 top: `${hover.top}%`,
-                transform: hover.left > 72 ? 'translate(-106%, -118%)' : 'translate(12px, -118%)',
+                transform: hover.left > 65 ? 'translate(-106%, -118%)' : 'translate(12px, -118%)',
               }}
             >
               <div className="mono tabular">({hover.x}, {hover.y})</div>
@@ -343,8 +368,8 @@ export default function HeatmapView({ refreshKey, initialUrl }) {
       <div className="heatmap-foot">
         <span className="muted small">
           {showPage
-            ? `Scroll inside the preview to inspect the full page (${pageWidth}×${pageHeight}px).`
-            : 'Normalized 16:10 coordinate grid based on each visitor document size.'}
+            ? `${isMobile ? 'Mobile' : 'Laptop'} preview (${pageWidth}×${pageHeight}px) — scroll inside to inspect full page.`
+            : `Normalized ${isMobile ? 'mobile' : 'laptop'} coordinate grid.`}
         </span>
         <div className="heat-scale" aria-hidden="true">
           <span className="small muted">Low</span>

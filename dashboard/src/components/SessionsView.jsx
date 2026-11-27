@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchSessions, fetchSessionEvents } from '../api.js';
-import { SearchIcon, CopyIcon, CheckIcon, EyeIcon, CursorIcon } from './Icons.jsx';
+import { SearchIcon, CopyIcon, CheckIcon, EyeIcon, CursorIcon, LaptopIcon, PhoneIcon } from './Icons.jsx';
 
 const fmtTime = (d) =>
   new Date(d).toLocaleString(undefined, {
@@ -98,21 +98,30 @@ export default function SessionsView({ refreshKey }) {
         )}
 
         <ul className="session-list">
-          {filteredSessions.map((s) => (
-            <li key={s.session_id}>
-              <button
-                type="button"
-                className={s.session_id === selected ? 'session-item active' : 'session-item'}
-                onClick={() => setSelected(s.session_id)}
-              >
-                <div className="session-top">
-                  <span className="mono sid" title={s.session_id}>{s.session_id}</span>
-                  <span className="event-count tabular">{s.event_count}</span>
-                </div>
-                <div className="session-meta tabular">Last active {fmtTime(s.last_seen)}</div>
-              </button>
-            </li>
-          ))}
+          {filteredSessions.map((s) => {
+            const isMobile = s.device_type === 'mobile';
+            return (
+              <li key={s.session_id}>
+                <button
+                  type="button"
+                  className={s.session_id === selected ? 'session-item active' : 'session-item'}
+                  onClick={() => setSelected(s.session_id)}
+                >
+                  <div className="session-top">
+                    <span className="mono sid" title={s.session_id}>{s.session_id}</span>
+                    <span className="event-count tabular">{s.event_count}</span>
+                  </div>
+                  <div className="session-foot">
+                    <span className="session-meta tabular">Last active {fmtTime(s.last_seen)}</span>
+                    <span className={isMobile ? 'device-pill mobile' : 'device-pill desktop'}>
+                      {isMobile ? <PhoneIcon width={11} height={11} /> : <LaptopIcon width={11} height={11} />}
+                      <span>{isMobile ? 'Mobile' : 'Laptop'}</span>
+                    </span>
+                  </div>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </section>
 

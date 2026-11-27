@@ -381,7 +381,21 @@ button, select, input { font: inherit; color: inherit; }
 .session-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .sid { font-size: 12px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .event-count { font-size: 12px; font-weight: 600; color: var(--accent-hover); background: rgba(154, 52, 18, 0.12); padding: 1px 7px; border-radius: 99px; flex-shrink: 0; }
+.session-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .session-meta { font-size: 12px; color: var(--muted); }
+.device-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--bg);
+  color: var(--muted);
+}
+.device-pill.mobile { background: var(--click-soft); color: var(--click-text); }
+.device-pill.desktop { background: var(--surface-subtle); color: var(--text); }
 
 .selected-id-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
 .icon-btn { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border); background: var(--surface-subtle); color: var(--muted); font-size: 11px; font-weight: 600; padding: 3px 7px; border-radius: 6px; cursor: pointer; transition: color 140ms ease, border-color 140ms ease, transform 120ms var(--ease-out); }
@@ -412,6 +426,23 @@ button, select, input { font: inherit; color: inherit; }
 select { height: 38px; padding: 0 10px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); font-size: 13px; width: 100%; }
 
 .heatmap-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.device-switch { display: inline-flex; background: var(--bg); padding: 3px; border-radius: 8px; border: 1px solid var(--border); gap: 2px; height: 38px; align-items: center; }
+.device-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.device-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
 .toggle-field { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; cursor: pointer; }
 .toggle-field input { accent-color: var(--accent); width: 15px; height: 15px; }
 .click-counter { display: flex; align-items: baseline; gap: 6px; padding: 6px 12px; background: var(--bg); border-radius: 8px; }
@@ -451,6 +482,13 @@ select { height: 38px; padding: 0 10px; border: 1px solid var(--border-strong); 
   overflow-y: auto;
   background: #ffffff;
 }
+.heat-scroller.mobile-frame {
+  max-width: 390px;
+  border-radius: 24px;
+  border: 6px solid #1c1917;
+  box-shadow: 0 16px 36px rgba(28, 25, 23, 0.14);
+}
+.heat-stage.mobile-stage { aspect-ratio: 9 / 16; }
 
 .heat-stage {
   position: relative;

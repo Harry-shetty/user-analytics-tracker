@@ -10,29 +10,53 @@
     href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="demo.css?v=3" />
+  <link rel="stylesheet" href="demo.css?v=4" />
 </head>
 <body>
   <header>
     <div class="wrap header-inner">
       <a class="logo" href="demo.html">Lumen</a>
-      <nav aria-label="Store navigation">
+      <nav class="desktop-nav" aria-label="Store navigation">
         <a href="demo.html" data-page="home">Shop</a>
         <a href="demo.html?page=sale" data-page="sale">Sale</a>
         <a href="demo.html?page=about" data-page="about">About</a>
         <a href="demo.html?page=contact" data-page="contact">Contact</a>
       </nav>
-      <button type="button" class="cart-trigger" id="cart-btn" aria-label="Open cart">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-          <path d="M3 6h18" />
-          <path d="M16 10a4 4 0 0 1-8 0" />
-        </svg>
-        <span>Bag</span>
-        <span class="cart-badge tabular" id="cart-count">0</span>
-      </button>
+      <div class="header-right">
+        <button type="button" class="cart-trigger" id="cart-btn" aria-label="Open cart">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+            <path d="M3 6h18" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+          <span class="bag-label">Bag</span>
+          <span class="cart-badge tabular" id="cart-count">0</span>
+        </button>
+        <button
+          type="button"
+          class="hamburger"
+          id="menu-btn"
+          aria-label="Open navigation menu"
+          aria-expanded="false"
+          aria-controls="mobile-nav"
+        >
+          <span class="ham-line"></span>
+          <span class="ham-line"></span>
+          <span class="ham-line"></span>
+        </button>
+      </div>
     </div>
   </header>
+
+  <!-- Mobile animated hamburger menu -->
+  <div class="mobile-backdrop" id="mobile-backdrop" aria-hidden="true"></div>
+  <nav class="mobile-menu" id="mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
+    <a href="demo.html" data-page="home">Shop</a>
+    <a href="demo.html?page=sale" data-page="sale">Sale</a>
+    <a href="demo.html?page=about" data-page="about">About</a>
+    <a href="demo.html?page=contact" data-page="contact">Contact</a>
+    <a href="demo.html?page=returns" data-page="returns">Returns</a>
+  </nav>
 
   <main id="app"></main>
 
@@ -72,7 +96,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="demo.js?v=2"></script>
-  <script src="tracker.js?v=5"></script>
+  <script src="demo.js?v=3"></script>
+  <script src="tracker.js?v=6"></script>
 </body>
 </html>

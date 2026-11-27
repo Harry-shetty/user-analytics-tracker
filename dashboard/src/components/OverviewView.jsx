@@ -142,6 +142,8 @@ export default function OverviewView({ refreshKey, onInspectHeatmap }) {
   const avgPerSession = stats.total_sessions ? (totalEvents / stats.total_sessions).toFixed(1) : '0.0';
   const clicksPerView = stats.page_views ? (stats.clicks / stats.page_views).toFixed(1) : '0.0';
   const viewShare = totalEvents ? Math.round((stats.page_views / totalEvents) * 100) : 50;
+  const desktopCount = stats.desktop_sessions ?? stats.total_sessions;
+  const mobileCount = stats.mobile_sessions ?? 0;
 
   return (
     <div className="overview">
@@ -164,7 +166,12 @@ export default function OverviewView({ refreshKey, onInspectHeatmap }) {
         </div>
 
         <div className="metric-strip">
-          <MetricCell label="Sessions" value={stats.total_sessions} detail={`${avgPerSession} events / session`} tone="#1c1917" />
+          <MetricCell
+            label="Sessions"
+            value={stats.total_sessions}
+            detail={`${desktopCount} laptop · ${mobileCount} mobile (${avgPerSession}/session)`}
+            tone="#1c1917"
+          />
           <MetricCell label="Page views" value={stats.page_views} detail={`${stats.top_pages.length} tracked URLs`} tone={COLORS.page_view} />
           <MetricCell label="Clicks" value={stats.clicks} detail={`${clicksPerView} clicks / view`} tone={COLORS.click} />
         </div>

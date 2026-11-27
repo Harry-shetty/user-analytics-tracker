@@ -221,7 +221,25 @@ document.querySelectorAll('nav a').forEach((link) => {
   if (link.dataset.page === page) link.classList.add('active');
 });
 
+const menuBtn = $('menu-btn');
+const mobileNav = $('mobile-nav');
+const mobileBackdrop = $('mobile-backdrop');
+
+function setMenuOpen(open) {
+  menuBtn?.classList.toggle('open', open);
+  menuBtn?.setAttribute('aria-expanded', String(open));
+  mobileNav?.classList.toggle('open', open);
+  mobileNav?.setAttribute('aria-hidden', String(!open));
+  mobileBackdrop?.classList.toggle('open', open);
+}
+
 // Event listeners
+menuBtn?.addEventListener('click', () => setMenuOpen(!mobileNav.classList.contains('open')));
+mobileBackdrop?.addEventListener('click', () => setMenuOpen(false));
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 768) setMenuOpen(false);
+});
+
 app.addEventListener('click', (e) => {
   const btn = e.target.closest('.add');
   if (!btn) return;
@@ -239,7 +257,10 @@ $('cart-btn').addEventListener('click', () => setDrawerOpen(true));
 $('close-drawer').addEventListener('click', () => setDrawerOpen(false));
 backdrop.addEventListener('click', () => setDrawerOpen(false));
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') setDrawerOpen(false);
+  if (e.key === 'Escape') {
+    setDrawerOpen(false);
+    setMenuOpen(false);
+  }
 });
 
 cartItemsEl.addEventListener('click', (e) => {
