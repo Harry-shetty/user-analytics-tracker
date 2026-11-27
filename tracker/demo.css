@@ -20,7 +20,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 ::selection { background: #fde6d8; color: var(--accent-hover); }
 html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+body { margin: 0; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; overflow-x: clip; }
 a { color: inherit; text-decoration: none; text-underline-offset: 4px; }
 button, input, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -132,7 +132,7 @@ nav a.active::after { transform: scaleX(1); }
 /* ── Products & Editorial Band ─────────────────────────────────── */
 .section { padding: 68px 0; }
 .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
-.section h2 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 36px; letter-spacing: -0.015em; margin: 0; }
+.section h2 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(28px, 4vw, 36px); letter-spacing: -0.015em; margin: 0; }
 .section-sub { font-size: 14px; color: var(--muted); margin: 0; }
 
 .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
@@ -159,7 +159,7 @@ nav a.active::after { transform: scaleX(1); }
 
 .band { background: var(--ink); color: #f7f4ee; padding: 64px 0; }
 .band-inner { display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
-.band h2 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 40px; margin: 0 0 8px; }
+.band h2 { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: clamp(30px, 4.5vw, 40px); margin: 0 0 8px; }
 .band p { margin: 0; color: #d6cfc4; font-size: 15px; }
 
 /* ── Prose Pages, Forms & Footer ───────────────────────────────── */
@@ -262,13 +262,42 @@ footer { border-top: 1px solid var(--border); padding: 36px 0; font-size: 13px; 
   *, *::before, *::after { transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1024px) {
+  .wrap { padding: 0 24px; }
   .hero-grid { grid-template-columns: 1fr; gap: 32px; }
-  .grid { grid-template-columns: repeat(2, 1fr); }
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
 }
 
-@media (max-width: 600px) {
-  .wrap { padding: 0 20px; }
-  nav { gap: 16px; font-size: 13px; }
+@media (max-width: 640px) {
+  .wrap { padding: 0 16px; }
+  .header-inner { height: auto; flex-wrap: wrap; padding: 12px 0 8px; gap: 10px 16px; }
+  .logo { order: 1; font-size: 26px; }
+  .cart-trigger { order: 2; }
+  nav {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+  }
+  nav a { padding: 8px 2px; }
+  .hero { padding: 32px 0 40px; }
+  .hero p { font-size: 15px; margin-bottom: 24px; }
+  .hero-facts { gap: 20px; margin-top: 24px; padding-top: 18px; flex-wrap: wrap; }
+  .section { padding: 44px 0; }
+  .section-head { margin-bottom: 22px; }
+  .band { padding: 44px 0; }
+  .band-inner { gap: 20px; }
+  .footer-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .drawer-head, .drawer-body, .drawer-foot { padding: 16px 18px; }
+  .qty button { width: 34px; height: 34px; }
+  .toast { left: 16px; right: 16px; bottom: 16px; text-align: center; }
+}
+
+@media (max-width: 480px) {
   .grid { grid-template-columns: 1fr; }
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .hero-actions .btn, .band .btn { width: 100%; }
 }
